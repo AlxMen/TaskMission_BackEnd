@@ -1,4 +1,4 @@
-import type { Request, Response } from "express"
+import type { Request, Response } from "express";
 import Project from "../models/Project";
 
 export class ProjectController {
@@ -23,8 +23,10 @@ export class ProjectController {
 
   static getProjectById = async (req: Request, res: Response) => {
     const { id } = req.params;
+
     try {
-      const project = await Project.findById(id);
+      const project = await Project.findById(id).populate("tasks");
+
       if (!project) {
         const error = new Error("Proyecto no encontrado");
         return res.status(404).json({ error: error.message });
@@ -58,12 +60,11 @@ export class ProjectController {
         const error = new Error("Proyecto no encontrado");
         return res.status(404).json({ error: error.message });
       }
-      
-      await project.deleteOne()
+
+      await project.deleteOne();
       res.send("Proyecto Eliminado");
     } catch (error) {
       console.log(error);
     }
   };
-
 }
