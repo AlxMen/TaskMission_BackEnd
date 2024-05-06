@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import { request, type Request, type Response } from "express";
 import User from "../models/User";
 import { checkPassword, hashPassword } from "../utils/auth";
 import Token from "../models/Token";
@@ -30,7 +30,7 @@ export class AuthController {
       // Enviar el email
       AuthEmail.sendConfirmationEmail({
         email: user.email,
-        name: user.email,
+        name: user.name,
         token: token.token,
       });
 
@@ -76,24 +76,88 @@ export class AuthController {
         await token.save();
         AuthEmail.sendConfirmationEmail({
           email: user.email,
-          name: user.email,
+          name: user.name,
           token: token.token,
         });
 
-        const error = new Error("La cuenta no ha sido confirmada, hemos enviado un e-mail de confirmacion");
+        const error = new Error(
+          "La cuenta no ha sido confirmada, hemos enviado un e-mail de confirmacion"
+        );
         return res.status(401).json({ error: error.message });
       }
 
       // Revisar password
-      const isPasswordCorrect = await checkPassword(password, user.password)
+      const isPasswordCorrect = await checkPassword(password, user.password);
       if (!isPasswordCorrect) {
-        const error = new Error(
-          "Password Incorrect"
-        );
+        const error = new Error("Password Incorrect");
         return res.status(401).json({ error: error.message });
       }
     } catch (error) {
       res.status(500).json({ error: "Hubo un Error" });
     }
   };
+  static requestConfirmationCode = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      // Usuario existe
+      const user = await User.findOne({ email });
+      if (!user) {
+        const error = new Error("El Usuario no esta registrado");
+        return res.status(404).json({ error: error.message });
+      }
+
+      if (user.confirmed) {
+        const error = new Error("El Usuario ya esta confirmado");
+        return res.status(403).json({ error: error.message });
+      }
+
+      // Generar el token
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+
+      // Enviar el email
+      AuthEmail.sendConfirmationEmail({
+        email: user.email,
+        name: user.name,
+        token: token.token,
+      });
+
+      await Promise.allSettled([user.save(), token.save()]);
+      res.send("Se envio un nuevo Codigo a tu correo");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un Error" });
+    }
+  };
+  static forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      // Usuario existe
+      const user = await User.findOne({ email });
+      if (!user) {
+        const error = new Error("El Usuario no esta registrado");
+        return res.status(404).json({ error: error.message });
+      }
+
+      // Generar el token
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+      await token.save()
+
+      // Enviar el email
+      AuthEmail.sendPasswordResetToken({
+        email: user.email,
+        name: user.name,
+        token: token.token,
+      });
+
+      res.send("Las instrucciones se mandaron a su email");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un Error" });
+    }
+  };
 }
+
