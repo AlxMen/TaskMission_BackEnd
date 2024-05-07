@@ -145,7 +145,7 @@ export class AuthController {
       const token = new Token();
       token.token = generateToken();
       token.user = user.id;
-      await token.save()
+      await token.save();
 
       // Enviar el email
       AuthEmail.sendPasswordResetToken({
@@ -155,6 +155,43 @@ export class AuthController {
       });
 
       res.send("Las instrucciones se mandaron a su email");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un Error" });
+    }
+  };
+
+  static validateToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+
+      const tokenExists = await Token.findOne({ token });
+      if (!tokenExists) {
+        const error = new Error("Token no valido");
+        return res.status(404).json({ error: error.message });
+      }
+
+      res.send("codigo verificado, Introduzca su nueva contraseña");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un Error" });
+    }
+  };
+  static updatePasswordWithToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const { password } = req.body
+
+      const tokenExists = await Token.findOne({ token });
+      if (!tokenExists) {
+        const error = new Error("Token no valido");
+        return res.status(404).json({ error: error.message });
+      }
+
+      const user = await User.findById(tokenExists.user);
+      user.password = await hashPassword(req.body.password);
+      
+      await Promise.allSettled([user.save(), tokenExists.deleteOne()])
+
+      res.send("La Contraseña se modifico correctamente");
     } catch (error) {
       res.status(500).json({ error: "Hubo un Error" });
     }
