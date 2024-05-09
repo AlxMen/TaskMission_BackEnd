@@ -9,10 +9,11 @@ import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
+router.use(authenticate)
+
 // Rutas para Proyectos
 router.post(
   "/",
-  authenticate,
   body("projectName")
     .notEmpty()
     .withMessage("El nombre del Proyecto es Obligatorio"),
@@ -100,9 +101,7 @@ router.delete(
 router.post(
   "/:projectId/tasks/:taskId/status",
   param("taskId").isMongoId().withMessage("ID no valido"),
-  body("status")
-    .notEmpty()
-    .withMessage("El estado es obligatorio"),
+  body("status").notEmpty().withMessage("El estado es obligatorio"),
   handleInputErrors,
   TaskController.updateStatus
 );

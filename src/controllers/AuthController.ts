@@ -94,9 +94,8 @@ export class AuthController {
         return res.status(401).json({ error: error.message });
       }
 
-      const token = generateJWT({id: user._id})
-      res.send(token)
-
+      const token = generateJWT({ id: user._id });
+      res.send(token);
     } catch (error) {
       res.status(500).json({ error: "Hubo un Error" });
     }
@@ -183,7 +182,7 @@ export class AuthController {
   static updatePasswordWithToken = async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
-      const { password } = req.body
+      const { password } = req.body;
 
       const tokenExists = await Token.findOne({ token });
       if (!tokenExists) {
@@ -193,13 +192,16 @@ export class AuthController {
 
       const user = await User.findById(tokenExists.user);
       user.password = await hashPassword(password);
-      
-      await Promise.allSettled([user.save(), tokenExists.deleteOne()])
+
+      await Promise.allSettled([user.save(), tokenExists.deleteOne()]);
 
       res.send("La Contraseña se modifico correctamente");
     } catch (error) {
       res.status(500).json({ error: "Hubo un Error" });
     }
+  };
+  static user = async (req: Request, res: Response) => {
+    return res.json(req.user)
   };
 }
 
