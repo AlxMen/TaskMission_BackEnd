@@ -15,13 +15,13 @@ export class TeamMemberController {
     res.json(user);
   };
 
-  static getProjectTeam = async (req: Request, res: Response) => { 
+  static getProjectTeam = async (req: Request, res: Response) => {
     const project = await Project.findById(req.project.id).populate({
-      path: 'team',
-      select: 'id email name'
-    })
-    res.json(project.team)
-  }
+      path: "team",
+      select: "id email name",
+    });
+    res.json(project.team);
+  };
 
   static addMenberById = async (req: Request, res: Response) => {
     const { id } = req.body;
@@ -46,15 +46,15 @@ export class TeamMemberController {
   };
 
   static removeMemberById = async (req: Request, res: Response) => {
-    const { id } = req.body;
+    const { userId } = req.params;
 
-    if (!req.project.team.some((team) => team.toString() === id)) {
+    if (!req.project.team.some((team) => team.toString() === userId)) {
       const error = new Error("El Usuario no existe en el proyecto");
       return res.status(409).json({ error: error.message });
     }
 
     req.project.team = req.project.team.filter(
-      (teamMember) => teamMember.toString() !== id
+      (teamMember) => teamMember.toString() !== userId
     );
 
     await req.project.save();
