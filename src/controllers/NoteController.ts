@@ -56,8 +56,4 @@ export class NoteController {
       return res.status(500).json({ error: error.message });
     }
   };
-
-  static Default3 = async (req: Request, res: Response) => {};
-
-  static Default4 = async (req: Request, res: Response) => {};
 }
