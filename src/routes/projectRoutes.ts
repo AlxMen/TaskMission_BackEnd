@@ -33,15 +33,20 @@ router.post(
   ProjectController.createProject
 );
 router.get("/", ProjectController.getAllProjects);
+
 router.get(
   "/:id",
   param("id").isMongoId().withMessage("ID no valido"),
   handleInputErrors,
   ProjectController.getProjectById
 );
+
+// Rutas para Tareas
+router.param("projectId", projectExists);
+
 router.put(
-  "/:id",
-  param("id").isMongoId().withMessage("ID no valido"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("ID no valido"),
   body("projectName")
     .notEmpty()
     .withMessage("El nombre del Proyecto es Obligatorio"),
@@ -52,17 +57,17 @@ router.put(
     .notEmpty()
     .withMessage("La Descripcion del Proyecto es Obligatoria"),
   handleInputErrors,
+  hasAuthorization,
   ProjectController.updateProject
 );
+
 router.delete(
-  "/:id",
-  param("id").isMongoId().withMessage("ID no valido"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("ID no valido"),
   handleInputErrors,
+  hasAuthorization,
   ProjectController.deleteProject
 );
-
-// Rutas para Tareas
-router.param("projectId", projectExists);
 
 router.post(
   "/:projectId/tasks",
