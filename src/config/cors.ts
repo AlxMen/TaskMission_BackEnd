@@ -1,6 +1,11 @@
 import { CorsOptions } from "cors";
 
 export const corsConfig: CorsOptions = {
+  origin: "*",
+  optionsSuccessStatus: 200,
+};
+
+/*export const corsConfig: CorsOptions = {
   origin: function (origin, callback) {
     const whitelist = [process.env.FRONTEND_URL]
 
@@ -13,4 +18,4 @@ export const corsConfig: CorsOptions = {
       callback(new Error('Error de CORS'))
     }
   }
-}
+}*/
