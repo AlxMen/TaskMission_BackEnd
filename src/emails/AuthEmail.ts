@@ -1,14 +1,16 @@
-import { transporter } from "../config/nodemailer";
+import { Resend } from "resend";
+
+
 
 interface IEmail {
   email: string
   name: string
   token: string
 }
-
+const resend = new Resend("re_XnBYxtRw_4eQGowFyqQQms7r2mhJFzndA");
 export class AuthEmail {
   static sendConfirmationEmail = async (user: IEmail) => {
-    const info = await transporter.sendMail({
+    const info = await resend.emails.send({
       from: "TaskMission <admin@taskmission.com>",
       to: user.email,
       subject: "TaskMission - Confirma tu cuenta",
@@ -22,7 +24,7 @@ export class AuthEmail {
     });
   };
   static sendPasswordResetToken = async (user: IEmail) => {
-    const info = await transporter.sendMail({
+    const info = await resend.emails.send({
       from: "TaskMission <admin@taskmission.com>",
       to: user.email,
       subject: "TaskMission - Restaurar Contraseña",
